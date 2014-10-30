@@ -1,0 +1,15 @@
+TODO
+====
+
+### Uncompleted 
+
+- [ ] Types
+- [ ] CLI
+- [ ] Handler
+  - [ ] POST /import
+  - [ ] GET /tables
+  - [ ] GET /tables/:name
+
+
+### Completed
+
