@@ -1,7 +1,12 @@
 package pie
 
+import (
+	"os"
+)
+
 // Database represents a collection of tables.
 type Database struct {
+	path   string
 	tables map[string]*Table
 }
 
@@ -10,6 +15,27 @@ func NewDatabase() *Database {
 	return &Database{
 		tables: make(map[string]*Table),
 	}
+}
+
+// Open opens and initializes a database at a given file path.
+func (db *Database) Open(path string) error {
+	// Make a new directory.
+	if err := os.Mkdir(path, 0700); err != nil {
+		return err
+	}
+
+	// Set the path.
+	db.path = path
+
+	// TODO: Open meta file.
+
+	return nil
+}
+
+func (db *Database) Close() error {
+	// Unset the path.
+	db.path = ""
+	return nil
 }
 
 // Table returns a table by name.
