@@ -1,7 +1,19 @@
 package pie
 
 import (
+	"errors"
 	"os"
+)
+
+var (
+	// ErrTableNotFound is returned when referencing a table that doesn't exist.
+	ErrTableNotFound = errors.New("table not found")
+
+	// ErrTableExists is returned when creating a table that already exists.
+	ErrTableExists = errors.New("table already exists")
+
+	// ErrTableNameRequired is returned when a blank table name is passed in.
+	ErrTableNameRequired = errors.New("table name required")
 )
 
 // Database represents a collection of tables.
@@ -41,6 +53,25 @@ func (db *Database) Close() error {
 // Table returns a table by name.
 func (db *Database) Table(name string) *Table {
 	return db.tables[name]
+}
+
+// CreateTable creates a new table.
+// Returns an error if name is blank or if table already exists.
+func (db *Database) CreateTable(name string, columns []*Column) error {
+	// TODO: Check for blank name.
+	// TODO: Check for existing table with the same name.
+	// TODO: Create table.
+	// TODO: Add table to the database.
+	return nil
+}
+
+// DeleteTable removes an existing table by name.
+// Returns an error if name is blank or table is not found.
+func (db *Database) DeleteTable(name string) error {
+	// TODO: Check for blank name.
+	// TODO: Check that table exists.
+	// TODO: Remove table from the database.
+	return nil
 }
 
 // Table represents a tabular set of data.
