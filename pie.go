@@ -58,14 +58,16 @@ func (db *Database) Table(name string) *Table {
 // CreateTable creates a new table.
 // Returns an error if name is blank or if table already exists.
 func (db *Database) CreateTable(name string, columns []*Column) error {
-	// TODO: Check for blank name.
-	// TODO: Check for existing table with the same name.
-
-	// Create table.
-	t := &Table{Name: name, Columns: columns}
+	// Check for blank name.
+	// Check for existing table with the same name.
+	if name == "" {
+		return ErrTableNameRequired
+	} else if db.tables[name] != nil {
+		return ErrTableExists
+	}
 
 	// Add table to the database.
-	db.tables[name] = t
+	db.tables[name] = &Table{Name: name, Columns: columns}
 
 	return nil
 }
