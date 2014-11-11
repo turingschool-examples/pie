@@ -76,8 +76,15 @@ func (db *Database) CreateTable(name string, columns []*Column) error {
 // Returns an error if name is blank or table is not found.
 func (db *Database) DeleteTable(name string) error {
 	// TODO: Check for blank name.
+	if name == "" {
+		return ErrTableNameRequired
+	} else if db.tables[name] == nil {
+		return ErrTableNotFound
+	}
 	// TODO: Check that table exists.
 	// TODO: Remove table from the database.
+	delete(db.tables, name)
+
 	return nil
 }
 
