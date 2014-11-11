@@ -60,8 +60,13 @@ func (db *Database) Table(name string) *Table {
 func (db *Database) CreateTable(name string, columns []*Column) error {
 	// TODO: Check for blank name.
 	// TODO: Check for existing table with the same name.
-	// TODO: Create table.
-	// TODO: Add table to the database.
+
+	// Create table.
+	t := &Table{Name: name, Columns: columns}
+
+	// Add table to the database.
+	db.tables[name] = t
+
 	return nil
 }
 

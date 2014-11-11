@@ -22,12 +22,14 @@ func TestDatabase_CreateTable(t *testing.T) {
 	// Retrieve table and verify it's correct.
 	if table := db.Table("foo"); table == nil {
 		t.Fatal("expected table")
+	} else if table.Name != "foo" {
+		t.Fatalf("unexpected name: %q", table.Name)
 	} else if len(table.Columns) != 2 {
-		t.Fatal("unexpected column count: %d", len(table.Columns))
+		t.Fatalf("unexpected column count: %d", len(table.Columns))
 	} else if table.Columns[0].Name != "first_name" {
-		t.Fatal("unexpected column(0) name: %s", table.Columns[0].Name)
+		t.Fatalf("unexpected column(0) name: %s", table.Columns[0].Name)
 	} else if table.Columns[1].Name != "last_name" {
-		t.Fatal("unexpected column(1) name: %s", table.Columns[1].Name)
+		t.Fatalf("unexpected column(1) name: %s", table.Columns[1].Name)
 	}
 }
 
