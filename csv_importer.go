@@ -14,9 +14,24 @@ func NewCSVImporter() *CSVImporter {
 
 // Import creates a new table in the database from data in the CSV reader.
 func (i *CSVImporter) Import(db *Database, name string, r *csv.Reader) error {
-	// TODO: Read CSV headers.
-	// TODO: Create columns from headers.
-	// TODO: Create table in database.
+	// Read CSV headers.
+	record, err := r.Read()
+	if err != nil {
+		return err
+	}
 
-	panic("not yet implemented: CSVImporter.Import()")
+	// Create columns from headers.
+	var columns []*Column
+	for _, name := range record {
+		columns = append(columns, &Column{Name: name})
+	}
+
+	// Create table in database.
+	if err := db.CreateTable(name, columns); err != nil {
+		return err
+	}
+
+	// TODO: Read remaining rows into Table.Rows.
+
+	return nil
 }

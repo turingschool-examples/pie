@@ -24,4 +24,17 @@ bob,smith,ford
 	if err := i.Import(db, "my_peeps", csv.NewReader(strings.NewReader(data))); err != nil {
 		t.Fatal(err)
 	}
+	if tbl := db.Table("my_peeps"); tbl == nil {
+		t.Fatal("table expected")
+	} else if len(tbl.Columns) != 3 {
+		t.Fatalf("unexpected table count: %d", len(tbl.Columns))
+	} else if tbl.Columns[0].Name != "first_name" {
+		t.Fatal("unexpected table name(0)")
+	} else if tbl.Columns[1].Name != "last_name" {
+		t.Fatal("unexpected table name(0)")
+	} else if tbl.Columns[2].Name != "company" {
+		t.Fatal("unexpected table name(0)")
+	} else if len(tbl.Rows) != 2 {
+		t.Fatalf("unexpected row count: %d", len(tbl.Rows))
+	}
 }
