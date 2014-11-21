@@ -1,0 +1,50 @@
+package pie_test
+
+import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/turingschool-examples/pie"
+)
+
+// Ensure we can create a table through the HTTP interface.
+func TestHandler_CreateTable(t *testing.T) {
+	db := pie.NewDatabase()
+	h := pie.NewHandler(db)
+	s := httptest.NewServer(h)
+	defer s.Close()
+
+	// Generate multipart form body.
+	var buf bytes.Buffer
+	w := multipart.NewWriter(&buf)
+	part, _ := w.CreateFormFile("file", "names.csv")
+	fmt.Fprint(part, "fname,lname!!\n")
+	fmt.Fprint(part, "bob,smith\n")
+	fmt.Fprint(part, "susy,que\n")
+	if err := w.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	// Upload a file.
+	resp, _ := http.Post(s.URL+"/tables", w.FormDataContentType(), &buf)
+	body, _ := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	} else if string(body) != "" {
+		t.Fatalf("unexpected body: %s", body)
+	}
+
+	// Verify table is created.
+	if tbl := db.Table("names.csv"); tbl == nil {
+		t.Fatal("expected table")
+	} else if len(tbl.Columns) != 2 {
+		t.Fatalf("expected column count: %d", len(tbl.Columns))
+	} else if len(tbl.Rows) != 2 {
+		t.Fatalf("expected row count: %d", len(tbl.Rows))
+	}
+}
