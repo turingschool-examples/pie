@@ -55,6 +55,15 @@ func (db *Database) Table(name string) *Table {
 	return db.tables[name]
 }
 
+// Tables returns a list of all tables in the database.
+func (db *Database) Tables() []*Table {
+	var a []*Table
+	for _, t := range db.tables {
+		a = append(a, t)
+	}
+	return a
+}
+
 // CreateTable creates a new table.
 // Returns an error if name is blank or if table already exists.
 func (db *Database) CreateTable(name string, columns []*Column) error {

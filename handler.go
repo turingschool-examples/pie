@@ -37,9 +37,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // serveTables processes a request to list tables in the database.
 func (h *Handler) serveTables(w http.ResponseWriter, r *http.Request) {
-	for _, t := range h.db.tables {
-		fmt.Fprintln(w, t.Name)
-	}
+	TableIndex(w, h.db.Tables())
 }
 
 // serveCreateTable processes a request to create a table in the database.
@@ -47,7 +45,6 @@ func (h *Handler) serveCreateTable(w http.ResponseWriter, r *http.Request) {
 	// Check for file in request body.
 	f, hdr, err := r.FormFile("file")
 	if err != nil {
-		warn(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

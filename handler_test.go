@@ -7,10 +7,36 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/turingschool-examples/pie"
 )
+
+// Ensure we can retrieve a list of tables through the HTTP interface.
+func TestHandler_Tables(t *testing.T) {
+	db := pie.NewDatabase()
+	h := pie.NewHandler(db)
+	w := httptest.NewRecorder()
+
+	// Create tables.
+	db.CreateTable("bob", nil)
+	db.CreateTable("susy", nil)
+
+	// Retrieve list of tables.
+	r, _ := http.NewRequest("GET", "/tables", nil)
+	h.ServeHTTP(w, r)
+
+	// Verify the request was successful.
+	if w.Code != http.StatusOK {
+		t.Fatalf("unexpected status: %d", w)
+	} else if !strings.Contains(w.Body.String(), `<li>bob</li>`) {
+		t.Fatalf("table 'bob' not found")
+	} else if !strings.Contains(w.Body.String(), `<li>susy</li>`) {
+		t.Fatalf("table 'susy' not found")
+	}
+}
 
 // Ensure we can create a table through the HTTP interface.
 func TestHandler_CreateTable(t *testing.T) {
@@ -48,3 +74,6 @@ func TestHandler_CreateTable(t *testing.T) {
 		t.Fatalf("expected row count: %d", len(tbl.Rows))
 	}
 }
+
+func warn(v ...interface{})              { fmt.Fprintln(os.Stderr, v...) }
+func warnf(msg string, v ...interface{}) { fmt.Fprintf(os.Stderr, msg+"\n", v...) }
