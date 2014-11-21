@@ -31,7 +31,15 @@ func (i *CSVImporter) Import(db *Database, name string, r *csv.Reader) error {
 		return err
 	}
 
-	// TODO: Read remaining rows into Table.Rows.
+	// Grab reference to table after it's created.
+	t := db.Table(name)
+
+	// Read remaining rows into Table.Rows.
+	rows, err := r.ReadAll()
+	if err != nil {
+		return err
+	}
+	t.Rows = rows
 
 	return nil
 }

@@ -2,6 +2,7 @@ package pie_test
 
 import (
 	"encoding/csv"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -36,5 +37,9 @@ bob,smith,ford
 		t.Fatal("unexpected table name(0)")
 	} else if len(tbl.Rows) != 2 {
 		t.Fatalf("unexpected row count: %d", len(tbl.Rows))
+	} else if !reflect.DeepEqual(tbl.Rows[0], []string{"susy", "que", "acme"}) {
+		t.Fatalf("unexpected row(0): %#v", tbl.Rows[0])
+	} else if !reflect.DeepEqual(tbl.Rows[1], []string{"bob", "smith", "ford"}) {
+		t.Fatalf("unexpected row(0): %#v", tbl.Rows[1])
 	}
 }
