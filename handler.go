@@ -3,10 +3,13 @@ package pie
 import (
 	"encoding/csv"
 	"fmt"
+	"mime"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/gorilla/mux"
+	"github.com/turingschool-examples/pie/assets"
 )
 
 // Handler represents the HTTP handler.
@@ -24,6 +27,8 @@ func NewHandler(db *Database) *Handler {
 	}
 
 	// Setup request multiplexer.
+	h.mux.HandleFunc("/", h.serveIndex).Methods("GET")
+	h.mux.HandleFunc("/assets/{filename}", h.serveAsset).Methods("GET")
 	h.mux.HandleFunc("/tables", h.serveTables).Methods("GET")
 	h.mux.HandleFunc("/tables", h.serveCreateTable).Methods("POST")
 
@@ -33,6 +38,30 @@ func NewHandler(db *Database) *Handler {
 // ServeHTTP handles HTTP requests.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.mux.ServeHTTP(w, r)
+}
+
+// serveIndex processes a request to the root page.
+func (h *Handler) serveIndex(w http.ResponseWriter, r *http.Request) {
+	Index(w)
+}
+
+// serveAsset serves an asset file by name.
+func (h *Handler) serveAsset(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	// Read asset from assets package.
+	filename := vars["filename"]
+	b, _ := assets.Asset(filename)
+	if b == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	// Set content type.
+	w.Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(filename)))
+
+	// Write asset contents.
+	w.Write(b)
 }
 
 // serveTables processes a request to list tables in the database.

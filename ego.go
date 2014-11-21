@@ -5,6 +5,24 @@ import (
 	"io"
 )
 
+//line head.ego:1
+func head(w io.Writer) error {
+//line head.ego:2
+	_, _ = fmt.Fprintf(w, "\n\n<head>\n  <title>pie</title>\n</head>\n")
+	return nil
+}
+
+//line index.ego:1
+func Index(w io.Writer) error {
+//line index.ego:2
+	_, _ = fmt.Fprintf(w, "\n\n<html>\n")
+//line index.ego:4
+	head(w)
+//line index.ego:5
+	_, _ = fmt.Fprintf(w, "\n\n<body>\n\t<h1>PIE</h1>\n</body>\n</html>\n\n")
+	return nil
+}
+
 //line index.ego:1
 func TableIndex(w io.Writer, tables []*Table) error {
 //line index.ego:2

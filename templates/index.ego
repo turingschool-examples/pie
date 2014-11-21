@@ -1,0 +1,10 @@
+<%! func Index(w io.Writer) error %>
+
+<html>
+<% head(w) %>
+
+<body>
+	<h1>PIE</h1>
+</body>
+</html>
+

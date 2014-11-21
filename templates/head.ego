@@ -1,0 +1,5 @@
+<%! func head(w io.Writer) error %>
+
+<head>
+  <title>pie</title>
+</head>
