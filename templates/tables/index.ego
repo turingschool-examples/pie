@@ -10,7 +10,7 @@
 
 	<ul>
 		<% for _, t := range tables { %>
-			<li><%= t.Name %></li>
+			<li><a href="/tables/<%= t.Name %>"><%= t.Name %></a></li>
 		<% } %>
 	</ul>
 </body>

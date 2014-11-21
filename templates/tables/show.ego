@@ -1,0 +1,28 @@
+<%! func TableShow(w io.Writer, t *Table) error %>
+
+<html>
+<head>
+  <title>pie : <%= t.Name %></title>
+</head>
+
+<body>
+	<h1><%= t.Name %></h1>
+
+	<table>
+		<tr>
+			<% for _, c := range t.Columns { %>
+				<td><%= c.Name %></td>
+			<% } %>
+		</tr>
+
+		<% for _, row := range t.Rows { %>
+			<tr>
+				<% for _, value := range row { %>
+					<td><%= value %></td>
+				<% } %>
+			</tr>
+		<% } %>
+	</table>
+</body>
+</html>
+

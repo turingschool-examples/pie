@@ -31,6 +31,7 @@ func NewHandler(db *Database) *Handler {
 	h.mux.HandleFunc("/assets/{filename}", h.serveAsset).Methods("GET")
 	h.mux.HandleFunc("/tables", h.serveTables).Methods("GET")
 	h.mux.HandleFunc("/tables", h.serveCreateTable).Methods("POST")
+	h.mux.HandleFunc("/tables/{name}", h.serveTable).Methods("GET")
 
 	return h
 }
@@ -67,6 +68,22 @@ func (h *Handler) serveAsset(w http.ResponseWriter, r *http.Request) {
 // serveTables processes a request to list tables in the database.
 func (h *Handler) serveTables(w http.ResponseWriter, r *http.Request) {
 	TableIndex(w, h.db.Tables())
+}
+
+// serveTable serves the contents of the table.
+func (h *Handler) serveTable(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	name := vars["name"]
+
+	// Find table and return error if it doesn't exist.
+	t := h.db.Table(name)
+	if t == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	// Render the table.
+	TableShow(w, t)
 }
 
 // serveCreateTable processes a request to create a table in the database.
