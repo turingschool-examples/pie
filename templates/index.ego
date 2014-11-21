@@ -5,6 +5,8 @@
 
 <body>
 	<h1>PIE</h1>
+
+	<form class="dropzone" action="/tables"></form>
 </body>
 </html>
 

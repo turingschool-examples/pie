@@ -8,7 +8,7 @@ import (
 //line head.ego:1
 func head(w io.Writer) error {
 //line head.ego:2
-	_, _ = fmt.Fprintf(w, "\n\n<head>\n  <title>pie</title>\n</head>\n")
+	_, _ = fmt.Fprintf(w, "\n\n<head>\n  <title>pie</title>\n  <script src=\"/assets/dropzone.js\"></script>\n</head>\n")
 	return nil
 }
 
@@ -19,7 +19,7 @@ func Index(w io.Writer) error {
 //line index.ego:4
 	head(w)
 //line index.ego:5
-	_, _ = fmt.Fprintf(w, "\n\n<body>\n\t<h1>PIE</h1>\n</body>\n</html>\n\n")
+	_, _ = fmt.Fprintf(w, "\n\n<body>\n\t<h1>PIE</h1>\n\n\t<form class=\"dropzone\" action=\"/tables\"></form>\n</body>\n</html>\n\n")
 	return nil
 }
 
