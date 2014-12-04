@@ -31,9 +31,9 @@ func TestHandler_Tables(t *testing.T) {
 	// Verify the request was successful.
 	if w.Code != http.StatusOK {
 		t.Fatalf("unexpected status: %d", w)
-	} else if !strings.Contains(w.Body.String(), `<li>bob</li>`) {
+	} else if !strings.Contains(w.Body.String(), `<li><a href="/tables/bob">bob</a></li>`) {
 		t.Fatalf("table 'bob' not found")
-	} else if !strings.Contains(w.Body.String(), `<li>susy</li>`) {
+	} else if !strings.Contains(w.Body.String(), `<li><a href="/tables/susy">susy</a></li>`) {
 		t.Fatalf("table 'susy' not found")
 	}
 }
