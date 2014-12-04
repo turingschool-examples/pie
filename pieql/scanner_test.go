@@ -15,13 +15,24 @@ func TestScanner_Scan(t *testing.T) {
 		lit string
 	}{
 		// Special Tokens (whitespace)
+		{s: `!`, tok: pieql.ILLEGAL, lit: "!"},
+		{s: ``, tok: pieql.EOF, lit: ""},
 		{s: ` `, tok: pieql.WS, lit: " "},
+		{s: ` X`, tok: pieql.WS, lit: " "},
+		{s: "\n \t", tok: pieql.WS, lit: "\n \t"},
+
+		// Misc
+		{s: `*`, tok: pieql.ASTERISK, lit: `*`},
+		{s: `,`, tok: pieql.COMMA, lit: `,`},
 
 		// Identifiers
 		{s: `foo`, tok: pieql.IDENT, lit: `foo`},
+		{s: `foo_20 `, tok: pieql.IDENT, lit: `foo`},
 
 		// Keywords
 		{s: `SELECT`, tok: pieql.SELECT},
+		{s: `FROM`, tok: pieql.FROM},
+		{s: `from`, tok: pieql.FROM},
 	}
 
 	for i, tt := range tests {

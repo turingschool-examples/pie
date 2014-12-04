@@ -27,18 +27,6 @@ const (
 	FROM
 )
 
-func isWhitespace(ch rune) bool {
-	return ch == ' ' || ch == '\t' || ch == '\n'
-}
-
-func isLetter(ch rune) bool {
-	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
-}
-
-func isDigit(ch rune) bool {
-	return (ch >= '0' && ch <= '9')
-}
-
 // Scanner represents a lexical scanner for PieQL
 type Scanner struct {
 	r *bufio.Reader
@@ -48,18 +36,6 @@ type Scanner struct {
 func NewScanner(r io.Reader) *Scanner {
 	return &Scanner{r: bufio.NewReader(r)}
 }
-
-// reads the next rune from the reader
-func (s *Scanner) read() rune {
-	ch, _, err := s.r.ReadRune()
-	if err != nil {
-		return eof
-	}
-	return ch
-}
-
-// unread pleaces the previously read rune back onto the reader
-func (s *Scanner) unread() { _ = s.r.UnreadRune() }
 
 // Scan returns the enxt token and position from the reader
 // Also returns the literal text read for strings
@@ -143,6 +119,18 @@ func (s *Scanner) scanIdent() (tok Token, lit string) {
 	return IDENT, buf.String()
 }
 
+// reads the next rune from the reader
+func (s *Scanner) read() rune {
+	ch, _, err := s.r.ReadRune()
+	if err != nil {
+		return eof
+	}
+	return ch
+}
+
+// unread pleaces the previously read rune back onto the reader
+func (s *Scanner) unread() { _ = s.r.UnreadRune() }
+
 type reader struct {
 	r   io.RuneScanner
 	i   int
@@ -153,3 +141,7 @@ type reader struct {
 }
 
 var eof = rune(0)
+
+func isWhitespace(ch rune) bool { return ch == ' ' || ch == '\t' || ch == '\n' }
+func isLetter(ch rune) bool     { return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') }
+func isDigit(ch rune) bool      { return (ch >= '0' && ch <= '9') }
