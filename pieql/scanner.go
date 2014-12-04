@@ -7,26 +7,6 @@ import (
 	"strings"
 )
 
-type Token int
-
-const (
-	//Special Tokens
-	ILLEGAL Token = iota
-	EOF
-	WS
-
-	//Literals
-	IDENT
-
-	// Misc
-	ASTERISK
-	COMMA
-
-	// Keywords
-	SELECT
-	FROM
-)
-
 // Scanner represents a lexical scanner for PieQL
 type Scanner struct {
 	r *bufio.Reader
@@ -59,7 +39,7 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	case eof:
 		return EOF, ""
 	case '*':
-		return ASTERISK, string(ch)
+		return MUL, string(ch)
 	case ',':
 		return COMMA, string(ch)
 	}

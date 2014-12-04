@@ -22,7 +22,7 @@ func TestScanner_Scan(t *testing.T) {
 		{s: "\n \t", tok: pieql.WS, lit: "\n \t"},
 
 		// Misc
-		{s: `*`, tok: pieql.ASTERISK, lit: `*`},
+		{s: `*`, tok: pieql.MUL, lit: `*`},
 		{s: `,`, tok: pieql.COMMA, lit: `,`},
 
 		// Identifiers
