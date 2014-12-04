@@ -111,15 +111,6 @@ func (s *Scanner) read() rune {
 // unread pleaces the previously read rune back onto the reader
 func (s *Scanner) unread() { _ = s.r.UnreadRune() }
 
-type reader struct {
-	r   io.RuneScanner
-	i   int
-	n   int
-	buf [3]struct {
-		ch rune
-	}
-}
-
 var eof = rune(0)
 
 func isWhitespace(ch rune) bool { return ch == ' ' || ch == '\t' || ch == '\n' }
