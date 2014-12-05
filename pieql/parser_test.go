@@ -24,6 +24,30 @@ func TestParser_Parse(t *testing.T) {
 				Source: "tbl",
 			},
 		},
+
+		// 1. Multi-field SELECT statement.
+		{
+			q: `SELECT fname, lname_23 , age FROM my_tbl  `,
+			stmt: &pieql.SelectStatement{
+				Fields: pieql.Fields{
+					&pieql.Field{Name: "fname"},
+					&pieql.Field{Name: "lname_23"},
+					&pieql.Field{Name: "age"},
+				},
+				Source: "my_tbl",
+			},
+		},
+
+		// 2. SELECT * statement.
+		{
+			q: `SELECT * FROM tbl`,
+			stmt: &pieql.SelectStatement{
+				Fields: pieql.Fields{
+					&pieql.Field{Name: "*"},
+				},
+				Source: "tbl",
+			},
+		},
 	}
 
 	// Parse querystring into AST.

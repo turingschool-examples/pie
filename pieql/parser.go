@@ -98,7 +98,6 @@ func (p *Parser) scan() (tok Token, lit string) {
 	p.buf.tok, p.buf.lit = tok, lit
 
 	return
-
 }
 
 // unscan pushes the previously read token back onto the buffer

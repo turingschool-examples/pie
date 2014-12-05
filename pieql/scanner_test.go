@@ -27,12 +27,12 @@ func TestScanner_Scan(t *testing.T) {
 
 		// Identifiers
 		{s: `foo`, tok: pieql.IDENT, lit: `foo`},
-		{s: `foo_20 `, tok: pieql.IDENT, lit: `foo`},
+		{s: `foo_20 `, tok: pieql.IDENT, lit: `foo_20`},
 
 		// Keywords
-		{s: `SELECT`, tok: pieql.SELECT},
-		{s: `FROM`, tok: pieql.FROM},
-		{s: `from`, tok: pieql.FROM},
+		{s: `SELECT`, tok: pieql.SELECT, lit: `SELECT`},
+		{s: `FROM`, tok: pieql.FROM, lit: `FROM`},
+		{s: `from`, tok: pieql.FROM, lit: `from`},
 	}
 
 	for i, tt := range tests {
@@ -40,6 +40,8 @@ func TestScanner_Scan(t *testing.T) {
 		tok, lit := s.Scan()
 		if tt.tok != tok {
 			t.Errorf("%d. %q token mismatch: exp=%q got=%q <%q>", i, tt.s, tt.tok, tok, lit)
+		} else if tt.lit != lit {
+			t.Errorf("%d. %q literal mismatch: exp=%q got=%q", i, tt.s, tt.lit, lit)
 		}
 	}
 }

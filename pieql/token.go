@@ -13,12 +13,12 @@ const (
 
 	//Literals
 	literal_beg
-	IDENT
+	IDENT // abcde
 	literal_end
 
 	// Operators
 	operator_beg
-	MUL
+	MUL // *
 	operator_end
 
 	// Keywords
