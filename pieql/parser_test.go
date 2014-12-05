@@ -67,3 +67,26 @@ func TestParser_Parse(t *testing.T) {
 		}
 	}
 }
+
+// Ensure the parser can return parse errors.
+func TestParser_Parse_Err(t *testing.T) {
+	var tests = []struct {
+		q   string
+		err string
+	}{
+		{q: `FROM`, err: `found "FROM", expected SELECT`},
+		{q: `SELECT !`, err: `found "!", expected field`},
+		{q: `SELECT field1 field2`, err: `found "field2", expected FROM`},
+		{q: `SELECT field1 FROM !`, err: `found "!", expected table name`},
+	}
+
+	// Parse querystring into AST.
+	for i, tt := range tests {
+		p := pieql.NewParser(strings.NewReader(tt.q))
+		_, err := p.Parse()
+		if err == nil || err.Error() != tt.err {
+			t.Errorf("%d. %q: unexpected error:\n\nexp=%s\n\ngot=%s\n\n", i, tt.q, tt.err, err)
+			continue
+		}
+	}
+}
