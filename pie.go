@@ -108,6 +108,14 @@ func (db *Database) Execute(stmt *pieql.SelectStatement) ([][]string, error) {
 		return nil, ErrTableNotFound
 	}
 
+	// Expand out SELECT ALL.
+	if len(stmt.Fields) > 0 && stmt.Fields[0].Name == "*" {
+		stmt.Fields = nil
+		for _, c := range t.Columns {
+			stmt.Fields = append(stmt.Fields, &pieql.Field{Name: c.Name})
+		}
+	}
+
 	// Iterate over all the table rows.
 	var result [][]string
 	for _, row := range t.Rows {
