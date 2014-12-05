@@ -1,9 +1,12 @@
 package pie_test
 
 import (
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/turingschool-examples/pie"
+	"github.com/turingschool-examples/pie/pieql"
 )
 
 // Ensure the database can create a table.
@@ -82,5 +85,37 @@ func TestDatabase_DeleteTable_ErrTableNotFound(t *testing.T) {
 	db := pie.NewDatabase()
 	if err := db.DeleteTable("no_such_table"); err != pie.ErrTableNotFound {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+// Ensure the database can execute a selection query.
+func TestDatabase_Execute(t *testing.T) {
+	// Create database and seed table.
+	db := pie.NewDatabase()
+	db.CreateTable("foo", []*pie.Column{{Name: "fname"}, {Name: "lname"}})
+	db.Table("foo").Rows = [][]string{
+		{"susy", "que"},
+		{"bob", "smith"},
+	}
+
+	// Parse PieQL statement.
+	stmt, err := pieql.NewParser(strings.NewReader(`SELECT lname, fname FROM foo`)).Parse()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Execute statement.
+	res, err := db.Execute(stmt)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify results.
+	if len(res) != 2 {
+		t.Fatalf("result len mismatch: %d", len(res))
+	} else if !reflect.DeepEqual(res[0], []string{"que", "susy"}) {
+		t.Fatalf("row(0) mismatch: %#v", res[0])
+	} else if !reflect.DeepEqual(res[1], []string{"smith", "bob"}) {
+		t.Fatalf("row(1) mismatch: %#v", res[1])
 	}
 }

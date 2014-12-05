@@ -2,7 +2,10 @@ package pie
 
 import (
 	"errors"
+	"fmt"
 	"os"
+
+	"github.com/turingschool-examples/pie/pieql"
 )
 
 var (
@@ -97,11 +100,54 @@ func (db *Database) DeleteTable(name string) error {
 	return nil
 }
 
+// Execute executes a SELECT statement and returns the results.
+func (db *Database) Execute(stmt *pieql.SelectStatement) ([][]string, error) {
+	// Lookup table by name.
+	t := db.Table(stmt.Source)
+	if t == nil {
+		return nil, ErrTableNotFound
+	}
+
+	// Iterate over all the table rows.
+	var result [][]string
+	for _, row := range t.Rows {
+		resultRow := make([]string, len(stmt.Fields))
+
+		// Lookup row value by field name for each field.
+		for i, f := range stmt.Fields {
+			// Lookup column index.
+			index := t.ColumnIndex(f.Name)
+			if index == -1 {
+				return nil, fmt.Errorf("column not found: %s", f.Name)
+			}
+
+			// Set result cell value.
+			resultRow[i] = row[index]
+		}
+
+		// Add output row to the result.
+		result = append(result, resultRow)
+	}
+
+	return result, nil
+}
+
 // Table represents a tabular set of data.
 type Table struct {
 	Name    string
 	Columns []*Column
 	Rows    [][]string
+}
+
+// ColumnIndex returns the position of the column by name.
+// Returns -1 if column is not found.
+func (t *Table) ColumnIndex(name string) int {
+	for i, c := range t.Columns {
+		if c.Name == name {
+			return i
+		}
+	}
+	return -1
 }
 
 // Column represents a column in a table.
