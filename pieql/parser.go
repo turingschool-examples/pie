@@ -24,6 +24,28 @@ func NewParser(r io.Reader) *Parser {
 func (p *Parser) Parse() (*SelectStatement, error) {
 	stmt := &SelectStatement{}
 
+	// Parse fields.
+	fields, err := p.parseFields()
+	if err != nil {
+		return nil, err
+	}
+	stmt.Fields = fields
+
+	// Parse the source.
+	source, err := p.parseSource()
+	if err != nil {
+		return nil, err
+	}
+	stmt.Source = source
+
+	return stmt, nil
+}
+
+// parseFields parses one to all fields.
+func (p *Parser) parseFields() (Fields, error) {
+	var fields Fields
+
+	// Expect to see the "SELECT" keyword.
 	if tok, lit := p.scanIgnoreWhitespace(); tok != SELECT {
 		return nil, fmt.Errorf("found %q, expected SELECT", lit)
 	}
@@ -34,7 +56,7 @@ func (p *Parser) Parse() (*SelectStatement, error) {
 		if tok != IDENT && tok != MUL {
 			return nil, fmt.Errorf("found %q, expected field", lit)
 		}
-		stmt.Fields = append(stmt.Fields, &Field{lit})
+		fields = append(fields, &Field{Name: lit})
 
 		// If the next token is not a comma then break the loop.
 		if tok, _ := p.scanIgnoreWhitespace(); tok != COMMA {
@@ -42,20 +64,22 @@ func (p *Parser) Parse() (*SelectStatement, error) {
 			break
 		}
 	}
+	return fields, nil
+}
 
-	// Next we expect to see the "FROM" keyword.
+// parseSource parses the source table for the query.
+func (p *Parser) parseSource() (string, error) {
+	// Expect to see the "FROM" keyword.
 	if tok, lit := p.scanIgnoreWhitespace(); tok != FROM {
-		return nil, fmt.Errorf("found %q, expected FROM", lit)
+		return "", fmt.Errorf("found %q, expected FROM", lit)
 	}
 
-	// Finally read in the source name.
 	tok, lit := p.scanIgnoreWhitespace()
 	if tok != IDENT {
-		return nil, fmt.Errorf("found %q, expected table name", lit)
+		return "", fmt.Errorf("found %q, expected table name", lit)
 	}
-	stmt.Source = lit
 
-	return stmt, nil
+	return lit, nil
 }
 
 // scan returns the next token from the scanner.
