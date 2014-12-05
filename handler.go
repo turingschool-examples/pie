@@ -6,10 +6,12 @@ import (
 	"mime"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/gorilla/mux"
 	"github.com/turingschool-examples/pie/assets"
+	"github.com/turingschool-examples/pie/pieql"
 )
 
 // Handler represents the HTTP handler.
@@ -32,6 +34,7 @@ func NewHandler(db *Database) *Handler {
 	h.mux.HandleFunc("/tables", h.serveTables).Methods("GET")
 	h.mux.HandleFunc("/tables", h.serveCreateTable).Methods("POST")
 	h.mux.HandleFunc("/tables/{name}", h.serveTable).Methods("GET")
+	h.mux.HandleFunc("/query", h.serveQuery).Methods("POST")
 
 	return h
 }
@@ -98,6 +101,9 @@ func (h *Handler) serveCreateTable(w http.ResponseWriter, r *http.Request) {
 
 	// Extract the filename.
 	name := hdr.Filename
+	if ext := path.Ext(name); ext != "" {
+		name = name[0 : len(name)-len(ext)]
+	}
 
 	// Import file as CSV.
 	i := NewCSVImporter()
@@ -105,6 +111,34 @@ func (h *Handler) serveCreateTable(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+// serveQuery executes a query against the database.
+func (h *Handler) serveQuery(w http.ResponseWriter, r *http.Request) {
+	// Parse the statement.
+	stmt, err := pieql.NewParser(r.Body).Parse()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Execute the statement.
+	res, err := h.db.Execute(stmt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Build header from fields.
+	hdr := make([]string, len(stmt.Fields))
+	for i, f := range stmt.Fields {
+		hdr[i] = f.Name
+	}
+
+	// Write the results.
+	cw := csv.NewWriter(w)
+	cw.Write(hdr)
+	cw.WriteAll(res)
 }
 
 func warn(v ...interface{})              { fmt.Fprintln(os.Stderr, v...) }
