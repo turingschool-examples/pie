@@ -66,7 +66,7 @@ func TestHandler_CreateTable(t *testing.T) {
 	}
 
 	// Verify table is created.
-	if tbl := db.Table("names.csv"); tbl == nil {
+	if tbl := db.Table("names"); tbl == nil {
 		t.Fatal("expected table")
 	} else if len(tbl.Columns) != 2 {
 		t.Fatalf("expected column count: %d", len(tbl.Columns))
