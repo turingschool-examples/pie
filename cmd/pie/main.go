@@ -7,12 +7,17 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/user"
+	"path/filepath"
 	"strings"
 
 	"github.com/turingschool-examples/pie"
 )
 
-const DefaultBindAddress = ":19876"
+const (
+	// DefaultBindAddress is the default port that pie listens on.
+	DefaultBindAddress = ":19876"
+)
 
 func main() {
 	log.SetFlags(0)
@@ -46,11 +51,25 @@ func main() {
 func runServer(args []string) {
 	// Parse command line flags.
 	fs := flag.NewFlagSet("pie", flag.ExitOnError)
+	dir := fs.String("d", "", "data directory")
 	addr := fs.String("addr", DefaultBindAddress, "bind address")
 	fs.Parse(args)
 
+	// Set data directory to user directory if not set.
+	if *dir == "" {
+		usr, err := user.Current()
+		if err != nil {
+			log.Fatal(err)
+		}
+		*dir = filepath.Join(usr.HomeDir, ".pie")
+	}
+
 	// Open database.
 	db := pie.NewDatabase()
+	if err := db.Open(*dir); err != nil {
+		log.Fatalf("open: %s", err)
+	}
+	defer db.Close()
 
 	// Initialize handler.
 	h := pie.NewHandler(db)

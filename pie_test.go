@@ -2,6 +2,8 @@ package pie_test
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -12,7 +14,13 @@ import (
 
 // Ensure the database can create a table.
 func TestDatabase_CreateTable(t *testing.T) {
+	path := tempfile()
+
 	db := pie.NewDatabase()
+	if err := db.Open(path); err != nil {
+		t.Fatalf("open: %s", err)
+	}
+	defer db.Close()
 
 	// Create table named "foo" with two columns.
 	columns := []*pie.Column{
@@ -34,6 +42,20 @@ func TestDatabase_CreateTable(t *testing.T) {
 		t.Fatalf("unexpected column(0) name: %s", table.Columns[0].Name)
 	} else if table.Columns[1].Name != "last_name" {
 		t.Fatalf("unexpected column(1) name: %s", table.Columns[1].Name)
+	}
+
+	// Close the database.
+	if err := db.Close(); err != nil {
+		t.Fatalf("close: %s", err)
+	} else if db.Table("foo") != nil {
+		t.Fatalf("table foo still exists")
+	}
+
+	// Reopen the database and make sure shit is still there.
+	if err := db.Open(path); err != nil {
+		t.Fatalf("reopen: %s", err)
+	} else if db.Table("foo") == nil {
+		t.Fatalf("expected foo table after reopen")
 	}
 }
 
@@ -152,4 +174,12 @@ func TestDatabase_UnmarshalJSON(t *testing.T) {
 	} else if db.Table("foo") == nil {
 		t.Fatalf("table foo not found")
 	}
+}
+
+// tempfile returns the path to a non-existent temporary file.
+func tempfile() string {
+	f, _ := ioutil.TempFile("", "pie-")
+	f.Close()
+	os.Remove(f.Name())
+	return f.Name()
 }

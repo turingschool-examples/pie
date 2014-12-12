@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/turingschool-examples/pie/pieql"
 )
@@ -36,21 +37,64 @@ func NewDatabase() *Database {
 // Open opens and initializes a database at a given file path.
 func (db *Database) Open(path string) error {
 	// Make a new directory.
-	if err := os.Mkdir(path, 0700); err != nil {
+	if err := os.MkdirAll(path, 0700); err != nil {
 		return err
 	}
 
 	// Set the path.
 	db.path = path
 
-	// TODO: Open meta file.
+	// Open meta file.
+	if err := db.load(); err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func (db *Database) Close() error {
-	// Unset the path.
 	db.path = ""
+	db.tables = make(map[string]*Table)
+	return nil
+}
+
+// load reads the metadata from disk.
+func (db *Database) load() error {
+	// Open the meta file.
+	f, err := os.Open(filepath.Join(db.path, "meta"))
+	if os.IsNotExist(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// Unmarshal the meta file.
+	if err := json.NewDecoder(f).Decode(&db); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// save persists the metadata to disk.
+func (db *Database) save() error {
+	if db.path == "" {
+		return nil
+	}
+
+	// Open file for writing.
+	f, err := os.Create(filepath.Join(db.path, "meta"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// Marshal metadata to file.
+	if err := json.NewEncoder(f).Encode(db); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -82,7 +126,7 @@ func (db *Database) CreateTable(name string, columns []*Column) error {
 	// Add table to the database.
 	db.tables[name] = &Table{Name: name, Columns: columns}
 
-	return nil
+	return db.save()
 }
 
 // DeleteTable removes an existing table by name.
@@ -98,7 +142,7 @@ func (db *Database) DeleteTable(name string) error {
 	// TODO: Remove table from the database.
 	delete(db.tables, name)
 
-	return nil
+	return db.save()
 }
 
 // Execute executes a SELECT statement and returns the results.
