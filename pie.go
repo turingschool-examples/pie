@@ -1,6 +1,7 @@
 package pie
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -140,6 +141,43 @@ func (db *Database) Execute(stmt *pieql.SelectStatement) ([][]string, error) {
 	return result, nil
 }
 
+// MarshalJSON encodes the database metadata as JSON.
+func (db *Database) MarshalJSON() ([]byte, error) {
+	var dm databaseJSONMarshaler
+	for _, t := range db.tables {
+		tm := &tableJSONMarshaler{
+			Name:    t.Name,
+			Columns: t.Columns,
+		}
+		dm.Tables = append(dm.Tables, tm)
+	}
+	return json.Marshal(dm)
+}
+
+// UnmarshalJSON decodes the JSON as database metadata.
+func (db *Database) UnmarshalJSON(data []byte) error {
+	var dm databaseJSONMarshaler
+	if err := json.Unmarshal(data, &dm); err != nil {
+		return err
+	}
+
+	// Copy marshaled data to internal types.
+	db.tables = make(map[string]*Table)
+	for _, tm := range dm.Tables {
+		t := &Table{
+			Name:    tm.Name,
+			Columns: tm.Columns,
+		}
+		db.tables[t.Name] = t
+	}
+
+	return nil
+}
+
+type databaseJSONMarshaler struct {
+	Tables []*tableJSONMarshaler `json:"tables"`
+}
+
 // Table represents a tabular set of data.
 type Table struct {
 	Name    string
@@ -160,5 +198,10 @@ func (t *Table) ColumnIndex(name string) int {
 
 // Column represents a column in a table.
 type Column struct {
-	Name string
+	Name string `json:"name"`
+}
+
+type tableJSONMarshaler struct {
+	Name    string    `json:"name"`
+	Columns []*Column `json:"columns"`
 }

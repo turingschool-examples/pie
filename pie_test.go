@@ -1,6 +1,7 @@
 package pie_test
 
 import (
+	"encoding/json"
 	"reflect"
 	"strings"
 	"testing"
@@ -117,5 +118,38 @@ func TestDatabase_Execute(t *testing.T) {
 		t.Fatalf("row(0) mismatch: %#v", res[0])
 	} else if !reflect.DeepEqual(res[1], []string{"smith", "bob"}) {
 		t.Fatalf("row(1) mismatch: %#v", res[1])
+	}
+}
+
+// Ensure the database can marshal metadata to JSON.
+func TestDatabase_MarshalJSON(t *testing.T) {
+	// Create a database with two tables.
+	db := pie.NewDatabase()
+	db.CreateTable("foo", []*pie.Column{{Name: "fname"}, {Name: "lname"}})
+	db.CreateTable("bar", []*pie.Column{{Name: "age"}})
+
+	// Add data to one table.
+	db.Table("foo").Rows = [][]string{{"bob", "smith"}}
+
+	// Marshal database into JSON.
+	if b, err := json.Marshal(db); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	} else if string(b) != `{"tables":[{"name":"foo","columns":[{"name":"fname"},{"name":"lname"}]},{"name":"bar","columns":[{"name":"age"}]}]}` {
+		t.Fatalf("unexpected bytes: %s", b)
+	}
+}
+
+// Ensure the database can unmarshal JSON to metadata.
+func TestDatabase_UnmarshalJSON(t *testing.T) {
+	data := []byte(`{"tables":[{"name":"foo","columns":[{"name":"fname"},{"name":"lname"}]},{"name":"bar","columns":[{"name":"age"}]}]}`)
+
+	// Unmarshal JSON into database.
+	db := pie.NewDatabase()
+	if err := json.Unmarshal(data, &db); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	} else if len(db.Tables()) != 2 {
+		t.Fatalf("table count mismatch: %d", len(db.Tables()))
+	} else if db.Table("foo") == nil {
+		t.Fatalf("table foo not found")
 	}
 }
