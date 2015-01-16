@@ -13,20 +13,13 @@ func head(w io.Writer) error {
 }
 
 //line index.ego:1
-func Index(w io.Writer) error {
+func Index(w io.Writer, tables []*Table) error {
 //line index.ego:2
 	_, _ = fmt.Fprintf(w, "\n\n<html>\n")
 //line index.ego:4
 	head(w)
 //line index.ego:5
-	_, _ = fmt.Fprintf(w, "\n\n<body>\n\t<h1>PIE</h1>\n\n\t<form class=\"dropzone\" action=\"/tables\"></form>\n</body>\n</html>\n\n")
-	return nil
-}
-
-//line index.ego:1
-func TableIndex(w io.Writer, tables []*Table) error {
-//line index.ego:2
-	_, _ = fmt.Fprintf(w, "\n\n<html>\n<head>\n  <title>pie</title>\n</head>\n\n<body>\n\t<h1>Tables</h1>\n\n\t<ul>\n\t\t")
+	_, _ = fmt.Fprintf(w, "\n\n<body>\n\t<h1>PIE</h1>\n\n\t<h2>Tables</h2>\n\n\t<ul>\n\t\t")
 //line index.ego:12
 	for _, t := range tables {
 //line index.ego:13
@@ -42,7 +35,7 @@ func TableIndex(w io.Writer, tables []*Table) error {
 //line index.ego:14
 	}
 //line index.ego:15
-	_, _ = fmt.Fprintf(w, "\n\t</ul>\n</body>\n</html>\n\n")
+	_, _ = fmt.Fprintf(w, "\n\t</ul>\n\n\n\t<br/><br/>\n\t<form class=\"dropzone\" action=\"/tables\"></form>\n\n</body>\n</html>\n\n")
 	return nil
 }
 
@@ -90,5 +83,16 @@ func TableShow(w io.Writer, t *Table, rows [][]string) error {
 	}
 //line show.ego:25
 	_, _ = fmt.Fprintf(w, "\n\t</table>\n</body>\n</html>\n\n")
+	return nil
+}
+
+//line visualize.ego:1
+func Visualize(w io.Writer) error {
+//line visualize.ego:2
+	_, _ = fmt.Fprintf(w, "\n\n<html>\n")
+//line visualize.ego:4
+	head(w)
+//line visualize.ego:5
+	_, _ = fmt.Fprintf(w, "\n\n<script src=\"/assets/d3.v3.min.js\"></script>\n\n<body>\n\t<h1>Visualize</h1>\n\n\t<h2>Query</h2>\n\t<textarea cols=\"80\" rows=\"5\"></textarea>\n\n\t<hr/>\n\n\t<div id=\"chart\"></div>\n</body>\n<script src=\"/assets/visualize.js\"></script>\n\n</html>\n\n")
 	return nil
 }

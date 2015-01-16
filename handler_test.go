@@ -14,8 +14,8 @@ import (
 	"github.com/turingschool-examples/pie"
 )
 
-// Ensure we can retrieve a list of tables through the HTTP interface.
-func TestHandler_Tables(t *testing.T) {
+// Ensure we can retrieve a list of tables through the root path.
+func TestHandler_Index(t *testing.T) {
 	db := pie.NewDatabase()
 	h := pie.NewHandler(db)
 	w := httptest.NewRecorder()
@@ -25,12 +25,12 @@ func TestHandler_Tables(t *testing.T) {
 	db.CreateTable("susy", nil)
 
 	// Retrieve list of tables.
-	r, _ := http.NewRequest("GET", "/tables", nil)
+	r, _ := http.NewRequest("GET", "/", nil)
 	h.ServeHTTP(w, r)
 
 	// Verify the request was successful.
 	if w.Code != http.StatusOK {
-		t.Fatalf("unexpected status: %d", w)
+		t.Fatalf("unexpected status: %d", w.Code)
 	} else if !strings.Contains(w.Body.String(), `<li><a href="/tables/bob">bob</a></li>`) {
 		t.Fatalf("table 'bob' not found")
 	} else if !strings.Contains(w.Body.String(), `<li><a href="/tables/susy">susy</a></li>`) {

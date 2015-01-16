@@ -1,0 +1,21 @@
+<%! func Visualize(w io.Writer) error %>
+
+<html>
+<% head(w) %>
+
+<script src="/assets/d3.v3.min.js"></script>
+
+<body>
+	<h1>Visualize</h1>
+
+	<h2>Query</h2>
+	<textarea cols="80" rows="5"></textarea>
+
+	<hr/>
+
+	<div id="chart"></div>
+</body>
+<script src="/assets/visualize.js"></script>
+
+</html>
+

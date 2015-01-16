@@ -3,6 +3,7 @@ package pie
 import (
 	"encoding/csv"
 	"fmt"
+	"io/ioutil"
 	"mime"
 	"net/http"
 	"os"
@@ -31,9 +32,9 @@ func NewHandler(db *Database) *Handler {
 	// Setup request multiplexer.
 	h.mux.HandleFunc("/", h.serveIndex).Methods("GET")
 	h.mux.HandleFunc("/assets/{filename}", h.serveAsset).Methods("GET")
-	h.mux.HandleFunc("/tables", h.serveTables).Methods("GET")
 	h.mux.HandleFunc("/tables", h.serveCreateTable).Methods("POST")
 	h.mux.HandleFunc("/tables/{name}", h.serveTable).Methods("GET")
+	h.mux.HandleFunc("/visualize", h.serveVisualize).Methods("GET")
 	h.mux.HandleFunc("/query", h.serveQuery).Methods("POST")
 
 	return h
@@ -46,16 +47,24 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // serveIndex processes a request to the root page.
 func (h *Handler) serveIndex(w http.ResponseWriter, r *http.Request) {
-	Index(w)
+	Index(w, h.db.Tables())
 }
 
 // serveAsset serves an asset file by name.
 func (h *Handler) serveAsset(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-
-	// Read asset from assets package.
 	filename := vars["filename"]
-	b, _ := assets.Asset(filename)
+
+	// If in development mode then read from file system.
+	// Otherwise read from the bundled assets.
+	var b []byte
+	if os.Getenv("PIE_ENV") == "development" {
+		b, _ = ioutil.ReadFile(filepath.Join("assets", filename))
+	} else {
+		b, _ = assets.Asset(filename)
+	}
+
+	// Return a 404 if the file doesn't exist.
 	if b == nil {
 		http.NotFound(w, r)
 		return
@@ -66,11 +75,6 @@ func (h *Handler) serveAsset(w http.ResponseWriter, r *http.Request) {
 
 	// Write asset contents.
 	w.Write(b)
-}
-
-// serveTables processes a request to list tables in the database.
-func (h *Handler) serveTables(w http.ResponseWriter, r *http.Request) {
-	TableIndex(w, h.db.Tables())
 }
 
 // serveTable serves the contents of the table.
@@ -118,6 +122,11 @@ func (h *Handler) serveCreateTable(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+// serveVisualize renders the visualization template.
+func (h *Handler) serveVisualize(w http.ResponseWriter, r *http.Request) {
+	Visualize(w)
 }
 
 // serveQuery executes a query against the database.
