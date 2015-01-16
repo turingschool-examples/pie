@@ -85,8 +85,15 @@ func (h *Handler) serveTable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Retrieve rows.
+	rows, err := h.db.TableRows(name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// Render the table.
-	TableShow(w, t)
+	TableShow(w, t, rows)
 }
 
 // serveCreateTable processes a request to create a table in the database.

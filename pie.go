@@ -11,6 +11,9 @@ import (
 )
 
 var (
+	// ErrNotOpen is returned using the database while it's closed.
+	ErrNotOpen = errors.New("database not open")
+
 	// ErrTableNotFound is returned when referencing a table that doesn't exist.
 	ErrTableNotFound = errors.New("table not found")
 
@@ -36,13 +39,16 @@ func NewDatabase() *Database {
 
 // Open opens and initializes a database at a given file path.
 func (db *Database) Open(path string) error {
-	// Make a new directory.
-	if err := os.MkdirAll(path, 0700); err != nil {
-		return err
-	}
-
 	// Set the path.
 	db.path = path
+
+	// Make a new directory.
+	if err := os.MkdirAll(db.path, 0700); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(db.dataPath(), 0700); err != nil {
+		return err
+	}
 
 	// Open meta file.
 	if err := db.load(); err != nil {
@@ -58,6 +64,16 @@ func (db *Database) Close() error {
 	return nil
 }
 
+// Path returns the root path of the database.
+func (db *Database) Path() string { return db.path }
+
+func (db *Database) dataPath() string {
+	if db.path == "" {
+		return ""
+	}
+	return filepath.Join(db.path, "data")
+}
+
 // load reads the metadata from disk.
 func (db *Database) load() error {
 	// Open the meta file.
@@ -67,7 +83,7 @@ func (db *Database) load() error {
 	} else if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	// Unmarshal the meta file.
 	if err := json.NewDecoder(f).Decode(&db); err != nil {
@@ -88,7 +104,7 @@ func (db *Database) save() error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	// Marshal metadata to file.
 	if err := json.NewEncoder(f).Encode(db); err != nil {
@@ -145,6 +161,46 @@ func (db *Database) DeleteTable(name string) error {
 	return db.save()
 }
 
+// TableRows retrieves the rows for a table from disk.
+func (db *Database) TableRows(name string) ([][]string, error) {
+	// Open data file for reading.
+	f, err := os.Open(filepath.Join(db.dataPath(), name))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = f.Close() }()
+
+	// Decode rows from disk.
+	var rows [][]string
+	if err := json.NewDecoder(f).Decode(&rows); err != nil {
+		return nil, err
+	}
+
+	return rows, nil
+}
+
+// SetTableRows sets the rows on a table and saves the rows to disk.
+func (db *Database) SetTableRows(name string, rows [][]string) error {
+	// Verify database is open.
+	if db.path == "" {
+		return ErrNotOpen
+	}
+
+	// Open data file for writing.
+	f, err := os.Create(filepath.Join(db.dataPath(), name))
+	if err != nil {
+		return err
+	}
+	defer func() { _ = f.Close() }()
+
+	// Encode rows to disk.
+	if err := json.NewEncoder(f).Encode(rows); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Execute executes a SELECT statement and returns the results.
 func (db *Database) Execute(stmt *pieql.SelectStatement) ([][]string, error) {
 	// Lookup table by name.
@@ -161,9 +217,15 @@ func (db *Database) Execute(stmt *pieql.SelectStatement) ([][]string, error) {
 		}
 	}
 
+	// Retrieve rows for table.
+	rows, err := db.TableRows(stmt.Source)
+	if err != nil {
+		return nil, err
+	}
+
 	// Iterate over all the table rows.
 	var result [][]string
-	for _, row := range t.Rows {
+	for _, row := range rows {
 		resultRow := make([]string, len(stmt.Fields))
 
 		// Lookup row value by field name for each field.
@@ -226,7 +288,6 @@ type databaseJSONMarshaler struct {
 type Table struct {
 	Name    string
 	Columns []*Column
-	Rows    [][]string
 }
 
 // ColumnIndex returns the position of the column by name.
