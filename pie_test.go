@@ -114,12 +114,13 @@ func TestDatabase_DeleteTable_ErrTableNotFound(t *testing.T) {
 // Ensure the database can execute a selection query.
 func TestDatabase_Execute(t *testing.T) {
 	// Create database and seed table.
-	db := pie.NewDatabase()
+	db := OpenDatabase()
+	defer db.Close()
 	db.CreateTable("foo", []*pie.Column{{Name: "fname"}, {Name: "lname"}})
-	db.Table("foo").Rows = [][]string{
+	db.SetTableRows("foo", [][]string{
 		{"susy", "que"},
 		{"bob", "smith"},
-	}
+	})
 
 	// Parse PieQL statement.
 	stmt, err := pieql.NewParser(strings.NewReader(`SELECT lname, fname FROM foo`)).Parse()
@@ -151,7 +152,7 @@ func TestDatabase_MarshalJSON(t *testing.T) {
 	db.CreateTable("bar", []*pie.Column{{Name: "age"}})
 
 	// Add data to one table.
-	db.Table("foo").Rows = [][]string{{"bob", "smith"}}
+	db.SetTableRows("foo", [][]string{{"bob", "smith"}})
 
 	// Marshal database into JSON.
 	if b, err := json.Marshal(db); err != nil {
@@ -174,6 +175,26 @@ func TestDatabase_UnmarshalJSON(t *testing.T) {
 	} else if db.Table("foo") == nil {
 		t.Fatalf("table foo not found")
 	}
+}
+
+// Database is a test wrapper for pie.Database.
+type Database struct {
+	*pie.Database
+}
+
+// OpenDatabase returns a new, opened instance of Database.
+func OpenDatabase() *Database {
+	db := pie.NewDatabase()
+	if err := db.Open(tempfile()); err != nil {
+		panic(err.Error())
+	}
+	return &Database{db}
+}
+
+// Close closes the database and removes the underlying data.
+func (db *Database) Close() {
+	defer os.RemoveAll(db.Path())
+	db.Database.Close()
 }
 
 // tempfile returns the path to a non-existent temporary file.

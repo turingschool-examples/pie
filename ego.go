@@ -47,7 +47,7 @@ func TableIndex(w io.Writer, tables []*Table) error {
 }
 
 //line show.ego:1
-func TableShow(w io.Writer, t *Table) error {
+func TableShow(w io.Writer, t *Table, rows [][]string) error {
 //line show.ego:2
 	_, _ = fmt.Fprintf(w, "\n\n<html>\n<head>\n  <title>pie : ")
 //line show.ego:5
@@ -71,7 +71,7 @@ func TableShow(w io.Writer, t *Table) error {
 //line show.ego:16
 	_, _ = fmt.Fprintf(w, "\n\t\t</tr>\n\n\t\t")
 //line show.ego:18
-	for _, row := range t.Rows {
+	for _, row := range rows {
 //line show.ego:19
 		_, _ = fmt.Fprintf(w, "\n\t\t\t<tr>\n\t\t\t\t")
 //line show.ego:20

@@ -1,4 +1,4 @@
-<%! func TableShow(w io.Writer, t *Table) error %>
+<%! func TableShow(w io.Writer, t *Table, rows [][]string) error %>
 
 <html>
 <head>
@@ -15,7 +15,7 @@
 			<% } %>
 		</tr>
 
-		<% for _, row := range t.Rows { %>
+		<% for _, row := range rows { %>
 			<tr>
 				<% for _, value := range row { %>
 					<td><%= value %></td>

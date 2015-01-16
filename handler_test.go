@@ -40,8 +40,9 @@ func TestHandler_Tables(t *testing.T) {
 
 // Ensure we can create a table through the HTTP interface.
 func TestHandler_CreateTable(t *testing.T) {
-	db := pie.NewDatabase()
-	h := pie.NewHandler(db)
+	db := OpenDatabase()
+	defer db.Close()
+	h := pie.NewHandler(db.Database)
 	s := httptest.NewServer(h)
 	defer s.Close()
 
@@ -70,8 +71,8 @@ func TestHandler_CreateTable(t *testing.T) {
 		t.Fatal("expected table")
 	} else if len(tbl.Columns) != 2 {
 		t.Fatalf("expected column count: %d", len(tbl.Columns))
-	} else if len(tbl.Rows) != 2 {
-		t.Fatalf("expected row count: %d", len(tbl.Rows))
+	} else if rows, _ := db.TableRows("names"); len(rows) != 2 {
+		t.Fatalf("expected row count: %d", len(rows))
 	}
 }
 
